@@ -159,7 +159,7 @@ This server implements the Model Context Protocol and can be used with any MCP-c
 ```json
 {
   "mcpServers": {
-    "android-layout-inspector": {
+    "android-mcp": {
       "command": "node",
       "args": ["/path/to/android-mcp/dist/index.js"]
     }
@@ -169,24 +169,10 @@ This server implements the Model Context Protocol and can be used with any MCP-c
 
 ### Claude CLI Setup
 
-**Automatic Setup:**
-```bash
-npm run setup-claude-cli
-```
-
 **Manual Setup:**
-Add to `~/.config/claude/config.json` (macOS/Linux) or `%APPDATA%\claude\config.json` (Windows):
 
-```json
-{
-  "mcpServers": {
-    "android-layout-inspector": {
-      "command": "node",
-      "args": ["/path/to/android-mcp/dist/index.js"],
-      "env": {}
-    }
-  }
-}
+```bash
+claude mcp add android-mcp node /path/to/android-mcp/dist/index.js
 ```
 
 **Usage Examples:**
