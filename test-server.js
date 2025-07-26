@@ -92,6 +92,7 @@ class MCPTester {
     console.log('  5 - Find elements (by text "Settings")');
     console.log('  6 - Take screenshot');
     console.log('  7 - Get view hierarchy');
+    console.log('  8 - Input text (custom text entry)');
     console.log('  r - Toggle raw output (current: ' + (this.showRawOutput ? 'ON' : 'OFF') + ')');
     console.log('  p - Toggle pretty output (current: ' + (this.showPrettyOutput ? 'ON' : 'OFF') + ')');
     console.log('  q - Quit');
@@ -103,7 +104,7 @@ class MCPTester {
     });
 
     const promptUser = () => {
-      rl.question('Enter command (1-7, r, p, or q): ', (answer) => {
+      rl.question('Enter command (1-8, r, p, or q): ', (answer) => {
         this.handleCommand(answer.trim(), rl, promptUser);
       });
     };
@@ -134,6 +135,9 @@ class MCPTester {
       case '7':
         this.getViewHierarchy();
         break;
+      case '8':
+        this.inputText(rl, promptFunction);
+        return; // Don't call promptFunction immediately since we're waiting for input
       case 'r':
         this.showRawOutput = !this.showRawOutput;
         console.log(`🔄 Raw output is now ${this.showRawOutput ? 'ON' : 'OFF'}`);
@@ -148,7 +152,7 @@ class MCPTester {
         this.server.kill();
         return;
       default:
-        console.log('❌ Invalid command. Please enter 1-7, r, p, or q. Try again.');
+        console.log('❌ Invalid command. Please enter 1-8, r, p, or q. Try again.');
     }
     
     setTimeout(promptFunction, 500);
@@ -249,6 +253,31 @@ class MCPTester {
     this.sendRequest(request);
   }
 
+  inputText(rl, promptFunction) {
+    rl.question('Enter text to input on device: ', (text) => {
+      if (text.trim() === '') {
+        console.log('❌ No text entered. Skipping input.');
+        setTimeout(promptFunction, 500);
+        return;
+      }
+      
+      console.log(`⌨️ Inputting text "${text}"...`);
+      const request = {
+        jsonrpc: '2.0',
+        id: this.requestId++,
+        method: 'tools/call',
+        params: {
+          name: 'input_text',
+          arguments: {
+            text: text
+          }
+        }
+      };
+      this.sendRequest(request);
+      setTimeout(promptFunction, 500);
+    });
+  }
+
   prettyPrintResponse(response) {
     console.log('\\n\ud83c\udf89 Pretty Output:');
     console.log('='.repeat(50));
@@ -315,6 +344,8 @@ class MCPTester {
       this.formatActivityInfo(data);
     } else if (data.tools) {
       this.formatToolsList(data.tools);
+    } else if (data.device && data.action === 'input_text') {
+      this.formatInputTextResponse(data);
     } else {
       console.log('\ud83d\udccb Data:', JSON.stringify(data, null, 2));
     }
@@ -455,6 +486,13 @@ class MCPTester {
       console.log(`    Visible: ${data.windowInfo.visible ? '\u2713' : '\u2717'}`);
       console.log(`    Has Input Focus: ${data.windowInfo.hasInputFocus ? '\u2713' : '\u2717'}`);
     }
+  }
+
+  formatInputTextResponse(data) {
+    console.log(`⌨️ Text Input Response for ${data.device}`);
+    console.log(`📝 Text: "${data.text}"`);
+    console.log(`🕰️ Timestamp: ${new Date(data.timestamp).toLocaleString()}`);
+    console.log(`✅ Success: ${data.success ? 'Yes' : 'No'}`);
   }
 
   formatToolsList(tools) {

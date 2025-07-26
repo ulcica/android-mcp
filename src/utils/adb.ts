@@ -266,4 +266,17 @@ export class ADBManager {
       throw new LayoutInspectorError(`Failed to swipe from (${startX}, ${startY}) to (${endX}, ${endY}): ${error}`, 'UNKNOWN_ERROR', deviceId);
     }
   }
+
+  async inputText(text: string, deviceId?: string): Promise<void> {
+    const adbPath = await this.findADBPath();
+    const deviceArg = deviceId ? `-s ${deviceId}` : '';
+    
+    try {
+      // Escape special characters and spaces for shell input
+      const escapedText = text.replace(/'/g, "\\'").replace(/ /g, '%s');
+      await execAsync(`"${adbPath}" ${deviceArg} shell input text '${escapedText}'`);
+    } catch (error) {
+      throw new LayoutInspectorError(`Failed to input text "${text}": ${error}`, 'UNKNOWN_ERROR', deviceId);
+    }
+  }
 }

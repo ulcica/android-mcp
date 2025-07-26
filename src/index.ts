@@ -53,6 +53,11 @@ const SwipeCoordinateSchema = z.object({
     duration: z.number().optional().describe('Swipe duration in milliseconds (default: 300)')
 });
 
+const InputTextSchema = z.object({
+    deviceId: z.string().optional().describe('Android device ID (optional, uses first available device if not specified)'),
+    text: z.string().describe('Text to input on the device')
+});
+
 const server = new Server({
     name: 'android-layout-inspector',
     version: '1.0.0'
@@ -216,6 +221,25 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
                     }
                 },
                 required: ['startX', 'startY', 'endX', 'endY'],
+                additionalProperties: false
+            }
+        },
+        {
+            name: 'input_text',
+            description: 'Input text on the Android device (types text into focused field)',
+            inputSchema: {
+                type: 'object',
+                properties: {
+                    deviceId: {
+                        type: 'string',
+                        description: 'Android device ID (optional, uses first available device if not specified)'
+                    },
+                    text: {
+                        type: 'string',
+                        description: 'Text to input on the device'
+                    }
+                },
+                required: ['text'],
                 additionalProperties: false
             }
         }
@@ -406,6 +430,28 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                                     end: { x: input.endX, y: input.endY }
                                 },
                                 duration: input.duration || 300,
+                                timestamp: new Date().toISOString(),
+                                success: true
+                            }, null, 2)
+                        }
+                    ]
+                };
+            }
+
+            case 'input_text': {
+                const input = InputTextSchema.parse(args);
+                const targetDevice = await getTargetDevice(input.deviceId);
+
+                await adbManager.inputText(input.text, targetDevice);
+
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: JSON.stringify({
+                                device: targetDevice,
+                                action: 'input_text',
+                                text: input.text,
                                 timestamp: new Date().toISOString(),
                                 success: true
                             }, null, 2)
