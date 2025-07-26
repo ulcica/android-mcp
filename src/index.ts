@@ -44,6 +44,15 @@ const ClickCoordinateSchema = z.object({
     y: z.number().describe('Y coordinate to click')
 });
 
+const SwipeCoordinateSchema = z.object({
+    deviceId: z.string().optional().describe('Android device ID (optional, uses first available device if not specified)'),
+    startX: z.number().describe('Starting X coordinate'),
+    startY: z.number().describe('Starting Y coordinate'),
+    endX: z.number().describe('Ending X coordinate'),
+    endY: z.number().describe('Ending Y coordinate'),
+    duration: z.number().optional().describe('Swipe duration in milliseconds (default: 300)')
+});
+
 const server = new Server({
     name: 'android-layout-inspector',
     version: '1.0.0'
@@ -172,6 +181,41 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
                     }
                 },
                 required: ['x', 'y'],
+                additionalProperties: false
+            }
+        },
+        {
+            name: 'swipe_coordinate',
+            description: 'Swipe from start (x,y) coordinates to end (x,y) coordinates on the Android device screen',
+            inputSchema: {
+                type: 'object',
+                properties: {
+                    deviceId: {
+                        type: 'string',
+                        description: 'Android device ID (optional, uses first available device if not specified)'
+                    },
+                    startX: {
+                        type: 'number',
+                        description: 'Starting X coordinate'
+                    },
+                    startY: {
+                        type: 'number',
+                        description: 'Starting Y coordinate'
+                    },
+                    endX: {
+                        type: 'number',
+                        description: 'Ending X coordinate'
+                    },
+                    endY: {
+                        type: 'number',
+                        description: 'Ending Y coordinate'
+                    },
+                    duration: {
+                        type: 'number',
+                        description: 'Swipe duration in milliseconds (default: 300)'
+                    }
+                },
+                required: ['startX', 'startY', 'endX', 'endY'],
                 additionalProperties: false
             }
         }
@@ -336,6 +380,32 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                                 device: targetDevice,
                                 action: 'click',
                                 coordinates: { x: input.x, y: input.y },
+                                timestamp: new Date().toISOString(),
+                                success: true
+                            }, null, 2)
+                        }
+                    ]
+                };
+            }
+
+            case 'swipe_coordinate': {
+                const input = SwipeCoordinateSchema.parse(args);
+                const targetDevice = await getTargetDevice(input.deviceId);
+
+                await adbManager.swipeCoordinate(input.startX, input.startY, input.endX, input.endY, input.duration, targetDevice);
+
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: JSON.stringify({
+                                device: targetDevice,
+                                action: 'swipe',
+                                coordinates: {
+                                    start: { x: input.startX, y: input.startY },
+                                    end: { x: input.endX, y: input.endY }
+                                },
+                                duration: input.duration || 300,
                                 timestamp: new Date().toISOString(),
                                 success: true
                             }, null, 2)

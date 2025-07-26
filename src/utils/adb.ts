@@ -254,4 +254,16 @@ export class ADBManager {
       throw new LayoutInspectorError(`Failed to click at coordinates (${x}, ${y}): ${error}`, 'UNKNOWN_ERROR', deviceId);
     }
   }
+
+  async swipeCoordinate(startX: number, startY: number, endX: number, endY: number, duration?: number, deviceId?: string): Promise<void> {
+    const adbPath = await this.findADBPath();
+    const deviceArg = deviceId ? `-s ${deviceId}` : '';
+    const swipeDuration = duration || 300; // Default 300ms duration
+    
+    try {
+      await execAsync(`"${adbPath}" ${deviceArg} shell input swipe ${startX} ${startY} ${endX} ${endY} ${swipeDuration}`);
+    } catch (error) {
+      throw new LayoutInspectorError(`Failed to swipe from (${startX}, ${startY}) to (${endX}, ${endY}): ${error}`, 'UNKNOWN_ERROR', deviceId);
+    }
+  }
 }
