@@ -9,6 +9,7 @@ A Model Context Protocol (MCP) server that provides Android Layout Inspector fun
 - **Debug View Attributes**: Access detailed view attributes and layout parameters
 - **Element Search**: Find UI elements by resource ID, text content, or class name
 - **Screenshot Capture**: Take device screenshots in base64 format
+- **Touch Interaction**: Click at specific coordinates on the device screen
 
 ## Prerequisites
 
@@ -96,6 +97,16 @@ Gets the UI view hierarchy from uiautomator dump with rotation information.
 
 **Output**: Structured view hierarchy with device info, timestamp, rotation, and UI element tree
 
+#### 7. `click_coordinate`
+Clicks at specific (x,y) coordinates on the Android device screen.
+
+**Input**:
+- `x` (required): X coordinate to click
+- `y` (required): Y coordinate to click
+- `deviceId` (optional): Android device ID
+
+**Output**: Success confirmation with device info, coordinates, and timestamp
+
 ## UI Element Properties
 
 Each UI element in the hierarchy contains the following properties:
@@ -182,6 +193,7 @@ claude "Show me the UI hierarchy of my Android screen"
 claude "Get the view hierarchy with rotation info from my Android device"
 claude "Take a screenshot of my Android device"
 claude "Find elements with text Settings on my Android device"
+claude "Click at coordinates 200,300 on my Android device"
 ```
 
 ## Use Cases
@@ -191,6 +203,7 @@ claude "Find elements with text Settings on my Android device"
 - **Layout Debugging**: Debug layout issues and element positioning
 - **App Analysis**: Reverse engineer app UI structures
 - **Quality Assurance**: Validate UI consistency across screens
+- **Automated Interaction**: Programmatically interact with Android apps through touch events
 
 ## Troubleshooting
 

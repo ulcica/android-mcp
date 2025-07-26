@@ -243,4 +243,15 @@ export class ADBManager {
       throw new LayoutInspectorError(`Failed to take screenshot: ${error}`, 'UNKNOWN_ERROR', deviceId);
     }
   }
+
+  async clickCoordinate(x: number, y: number, deviceId?: string): Promise<void> {
+    const adbPath = await this.findADBPath();
+    const deviceArg = deviceId ? `-s ${deviceId}` : '';
+    
+    try {
+      await execAsync(`"${adbPath}" ${deviceArg} shell input tap ${x} ${y}`);
+    } catch (error) {
+      throw new LayoutInspectorError(`Failed to click at coordinates (${x}, ${y}): ${error}`, 'UNKNOWN_ERROR', deviceId);
+    }
+  }
 }

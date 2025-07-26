@@ -38,6 +38,12 @@ const FindElementsSchema = z.object({
     exactMatch: z.boolean().optional().default(false).describe('Whether to use exact text matching')
 });
 
+const ClickCoordinateSchema = z.object({
+    deviceId: z.string().optional().describe('Android device ID (optional, uses first available device if not specified)'),
+    x: z.number().describe('X coordinate to click'),
+    y: z.number().describe('Y coordinate to click')
+});
+
 const server = new Server({
     name: 'android-layout-inspector',
     version: '1.0.0'
@@ -145,6 +151,29 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
                 },
                 additionalProperties: false
             }
+        },
+        {
+            name: 'click_coordinate',
+            description: 'Click at specific (x,y) coordinates on the Android device screen',
+            inputSchema: {
+                type: 'object',
+                properties: {
+                    deviceId: {
+                        type: 'string',
+                        description: 'Android device ID (optional, uses first available device if not specified)'
+                    },
+                    x: {
+                        type: 'number',
+                        description: 'X coordinate to click'
+                    },
+                    y: {
+                        type: 'number',
+                        description: 'Y coordinate to click'
+                    }
+                },
+                required: ['x', 'y'],
+                additionalProperties: false
+            }
         }
     ]
 }));
@@ -218,7 +247,15 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 const hierarchy = UIHierarchyParser.parseUIHierarchy(xmlContent, targetDevice);
 
                 if (!input.resourceId && !input.text && !input.className) {
-                    throw new Error('Must specify at least one search criteria: resourceId, text, or className');
+                    return {
+                        content: [
+                            {
+                                type: 'text',
+                                text: 'Error: Must specify at least one search criteria: resourceId, text, or className'
+                            }
+                        ],
+                        isError: true
+                    };
                 }
 
                 let results: UIElement[] = [];
@@ -285,8 +322,38 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 };
             }
 
+            case 'click_coordinate': {
+                const input = ClickCoordinateSchema.parse(args);
+                const targetDevice = await getTargetDevice(input.deviceId);
+
+                await adbManager.clickCoordinate(input.x, input.y, targetDevice);
+
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: JSON.stringify({
+                                device: targetDevice,
+                                action: 'click',
+                                coordinates: { x: input.x, y: input.y },
+                                timestamp: new Date().toISOString(),
+                                success: true
+                            }, null, 2)
+                        }
+                    ]
+                };
+            }
+
             default:
-                throw new Error(`Unknown tool: ${name}`);
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `Error: Unknown tool: ${name}`
+                        }
+                    ],
+                    isError: true
+                };
         }
     } catch (error) {
         return {
