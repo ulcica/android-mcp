@@ -188,14 +188,30 @@ export class ADBManager {
       const [windowOutput, activityOutput] = await Promise.all([
         execAsync(`"${adbPath}" ${deviceArg} shell dumpsys window | grep -E 'mCurrentFocus|mFocusedApp|Window #'`).then(r => r.stdout),
         execAsync(`"${adbPath}" ${deviceArg} shell dumpsys activity top | head -20`).then(r => r.stdout)
-      ]);
+    ]);
       
-      // Parse window focus information
-      const focusMatch = windowOutput.match(/\{[^}]*\s([^/\s]+)\/([^}\s]+)/);
-      if (!focusMatch) return null;
+      // Parse current focus window - prioritize mCurrentFocus
+      const currentFocusMatch = windowOutput.match(/mCurrentFocus=Window\{[^}]*\s+u\d+\s+([^/\s]+)\/([^}\s]+)/);
+      if (!currentFocusMatch) {
+        // Fallback to mFocusedApp if mCurrentFocus not found
+        const focusedAppMatch = windowOutput.match(/mFocusedApp=.*\s+([^/\s]+)\/\.?([^}\s]+)/);
+        if (!focusedAppMatch) return null;
+        
+        const packageName = focusedAppMatch[1];
+        const activityName = focusedAppMatch[2];
+        return {
+          package: packageName,
+          activity: activityName.startsWith('.') ? activityName : `.${activityName}`,
+          windowInfo: {
+            focused: true,
+            visible: true,
+            hasInputFocus: true
+          }
+        };
+      }
       
-      const packageName = focusMatch[1];
-      const activityName = focusMatch[2];
+      const packageName = currentFocusMatch[1];
+      const activityName = currentFocusMatch[2];
       
       // Extract PID if available
       const pidMatch = activityOutput.match(/pid=(\d+)/);
