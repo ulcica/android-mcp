@@ -1,0 +1,187 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # Trigger on version tags like v1.1.0
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        java: [17, 21]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up JDK ${{ matrix.java }}
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ matrix.java }}
+        distribution: 'temurin'
+        
+    - name: Cache Gradle packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+          
+    - name: Make gradlew executable
+      run: chmod +x ./gradlew
+      
+    - name: Build with Gradle
+      run: ./gradlew build
+      
+    - name: Run tests
+      run: ./gradlew test
+      
+    - name: Upload build artifacts (Java ${{ matrix.java }})
+      if: matrix.java == 17  # Only upload once
+      uses: actions/upload-artifact@v4
+      with:
+        name: android-mcp-jar
+        path: build/libs/android-mcp.jar
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch all history for changelog
+        
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: 17
+        distribution: 'temurin'
+        
+    - name: Cache Gradle packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+          
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: android-mcp-jar
+        path: build/libs/
+        
+    - name: Rebuild if needed (fallback)
+      run: |
+        if [ ! -f build/libs/android-mcp.jar ]; then
+          chmod +x ./gradlew
+          ./gradlew build
+        fi
+        
+    - name: Get version from tag
+      id: version
+      run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+      
+    - name: Verify JAR exists
+      run: |
+        ls -la build/libs/
+        if [ ! -f build/libs/android-mcp.jar ]; then
+          echo "ERROR: android-mcp.jar not found!"
+          exit 1
+        fi
+        
+    - name: Generate checksums
+      run: |
+        cd build/libs
+        sha256sum android-mcp.jar > android-mcp.jar.sha256
+        md5sum android-mcp.jar > android-mcp.jar.md5
+        
+    - name: Generate changelog
+      id: changelog
+      run: |
+        # Get the previous tag
+        PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+        
+        # Generate changelog
+        if [ -n "$PREV_TAG" ]; then
+          CHANGELOG=$(git log $PREV_TAG..HEAD --pretty=format:"- %s" --no-merges)
+        else
+          CHANGELOG=$(git log --pretty=format:"- %s" --no-merges -10)
+        fi
+        
+        # Create release body
+        cat > release_notes.md << EOF
+        ## Android MCP Server v${{ steps.version.outputs.version }}
+        
+        ### Changes
+        $CHANGELOG
+        
+        ### Installation
+        
+        #### Download JAR
+        Download \`android-mcp.jar\` and place it anywhere on your system.
+        
+        #### Configure Claude Desktop
+        Add to your Claude Desktop config:
+        \`\`\`json
+        {
+          "mcpServers": {
+            "android-mcp": {
+              "command": "java",
+              "args": ["-jar", "/path/to/android-mcp.jar"]
+            }
+          }
+        }
+        \`\`\`
+        
+        #### Verify Installation
+        \`\`\`bash
+        java -jar android-mcp.jar --version
+        java -jar android-mcp.jar --help
+        \`\`\`
+        
+        ### Requirements
+        - Java 17 or later
+        - Android SDK Platform Tools (ADB)
+        - Connected Android device with USB debugging enabled
+        
+        ### Security
+        Verify download integrity:
+        \`\`\`bash
+        sha256sum android-mcp.jar
+        # Should match: $(cat build/libs/android-mcp.jar.sha256)
+        \`\`\`
+        EOF
+        
+        echo "Generated release notes in release_notes.md"
+        
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        name: "Android MCP Server v${{ steps.version.outputs.version }}"
+        body_path: release_notes.md
+        files: |
+          build/libs/android-mcp.jar
+          build/libs/android-mcp.jar.sha256
+          build/libs/android-mcp.jar.md5
+        draft: false
+        prerelease: false
+        generate_release_notes: false  # We provide custom notes
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

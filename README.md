@@ -26,14 +26,28 @@ A Model Context Protocol (MCP) server that provides Android Layout Inspector fun
 
 ## Installation & Setup
 
-### 1. Build the Application
+### Option 1: Download from GitHub Releases (Recommended)
+
+1. **Download the latest release** from [GitHub Releases](https://github.com/ulcica/android-mcp/releases)
+2. **Download `android-mcp.jar`** from the latest release
+3. **Verify integrity** (optional but recommended):
+   ```bash
+   sha256sum android-mcp.jar
+   # Compare with the .sha256 file from the release
+   ```
+
+### Option 2: Build from Source
 
 ```bash
+# Clone the repository
+git clone https://github.com/ulcica/android-mcp.git
+cd android-mcp
+
 # Build the Kotlin JAR file
 ./gradlew build
 ```
 
-### 2. Configure Claude Desktop
+### Configure Claude Desktop
 
 Add this configuration to your Claude Desktop config file:
 
@@ -408,6 +422,29 @@ Add logging to see detailed ADB command execution:
 // In AdbManager.kt, uncomment debug statements
 System.err.println("Executing: ${command.joinToString(" ")}")
 ```
+
+## Releases
+
+This project uses automated GitHub releases. New versions are automatically built and published when tags are created.
+
+### Release Process
+
+1. Update version in `build.gradle.kts`
+2. Commit changes and create a git tag:
+   ```bash
+   git tag v1.2.0
+   git push origin v1.2.0
+   ```
+3. GitHub Actions automatically:
+   - Builds the JAR file
+   - Runs tests on Java 17 and 21
+   - Creates a GitHub release
+   - Uploads `android-mcp.jar` with checksums
+   - Generates changelog from commit messages
+
+### Download Latest Release
+
+Always download the latest version from [GitHub Releases](https://github.com/ulcica/android-mcp/releases) for the most stable experience.
 
 ## Contributing
 
