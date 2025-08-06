@@ -1,6 +1,17 @@
 package de.cadeda.mcp.model
 
 import de.cadeda.mcp.model.uihierarchy.LayoutInspectorError
+import kotlinx.serialization.Serializable
+
+/**
+ * Simple result data class for MCP responses.
+ */
+@Serializable
+data class AndroidResult(
+    val success: Boolean,
+    val message: String,
+    val data: Map<String, String> = emptyMap()
+)
 
 /**
  * A Result type for consistent error handling across the Android MCP server.
@@ -9,14 +20,14 @@ import de.cadeda.mcp.model.uihierarchy.LayoutInspectorError
  * Note: This is primarily for internal use. Serialization support is limited due to
  * LayoutInspectorError complexity.
  */
-sealed class AndroidResult<out T> {
-    data class Success<T>(val data: T) : AndroidResult<T>()
-    data class Failure<T>(val error: LayoutInspectorError) : AndroidResult<T>()
+sealed class AndroidInternalResult<out T> {
+    data class Success<T>(val data: T) : AndroidInternalResult<T>()
+    data class Failure<T>(val error: LayoutInspectorError) : AndroidInternalResult<T>()
     
     companion object {
-        fun <T> success(data: T): AndroidResult<T> = Success(data)
-        fun <T> failure(error: LayoutInspectorError): AndroidResult<T> = Failure(error)
-        fun <T> failure(message: String, deviceId: String? = null): AndroidResult<T> = 
+        fun <T> success(data: T): AndroidInternalResult<T> = Success(data)
+        fun <T> failure(error: LayoutInspectorError): AndroidInternalResult<T> = Failure(error)
+        fun <T> failure(message: String, deviceId: String? = null): AndroidInternalResult<T> = 
             Failure(LayoutInspectorError.UnknownError(message, deviceId))
     }
     
@@ -65,7 +76,7 @@ sealed class AndroidResult<out T> {
     /**
      * Transforms the data if successful, or returns the same failure.
      */
-    inline fun <R> map(transform: (T) -> R): AndroidResult<R> = when (this) {
+    inline fun <R> map(transform: (T) -> R): AndroidInternalResult<R> = when (this) {
         is Success -> success(transform(data))
         is Failure -> Failure(error)
     }
@@ -73,7 +84,7 @@ sealed class AndroidResult<out T> {
     /**
      * Flat-maps the data if successful, or returns the same failure.
      */
-    inline fun <R> flatMap(transform: (T) -> AndroidResult<R>): AndroidResult<R> = when (this) {
+    inline fun <R> flatMap(transform: (T) -> AndroidInternalResult<R>): AndroidInternalResult<R> = when (this) {
         is Success -> transform(data)
         is Failure -> Failure(error)
     }
@@ -81,7 +92,7 @@ sealed class AndroidResult<out T> {
     /**
      * Performs the given action if successful.
      */
-    inline fun onSuccess(action: (T) -> Unit): AndroidResult<T> {
+    inline fun onSuccess(action: (T) -> Unit): AndroidInternalResult<T> {
         if (this is Success) action(data)
         return this
     }
@@ -89,34 +100,34 @@ sealed class AndroidResult<out T> {
     /**
      * Performs the given action if failed.
      */
-    inline fun onFailure(action: (LayoutInspectorError) -> Unit): AndroidResult<T> {
+    inline fun onFailure(action: (LayoutInspectorError) -> Unit): AndroidInternalResult<T> {
         if (this is Failure) action(error)
         return this
     }
 }
 
 /**
- * Extension function to catch exceptions and convert them to AndroidResult.
+ * Extension function to catch exceptions and convert them to AndroidInternalResult.
  */
-inline fun <T> androidResultOf(block: () -> T): AndroidResult<T> {
+inline fun <T> androidResultOf(block: () -> T): AndroidInternalResult<T> {
     return try {
-        AndroidResult.success(block())
+        AndroidInternalResult.success(block())
     } catch (e: LayoutInspectorError) {
-        AndroidResult.failure(e)
+        AndroidInternalResult.failure(e)
     } catch (e: Exception) {
-        AndroidResult.failure(LayoutInspectorError.UnknownError(e.message ?: "Unknown error"))
+        AndroidInternalResult.failure(LayoutInspectorError.UnknownError(e.message ?: "Unknown error"))
     }
 }
 
 /**
- * Extension function for suspend functions to catch exceptions and convert them to AndroidResult.
+ * Extension function for suspend functions to catch exceptions and convert them to AndroidInternalResult.
  */
-suspend inline fun <T> suspendAndroidResultOf(crossinline block: suspend () -> T): AndroidResult<T> {
+suspend inline fun <T> suspendAndroidResultOf(crossinline block: suspend () -> T): AndroidInternalResult<T> {
     return try {
-        AndroidResult.success(block())
+        AndroidInternalResult.success(block())
     } catch (e: LayoutInspectorError) {
-        AndroidResult.failure(e)
+        AndroidInternalResult.failure(e)
     } catch (e: Exception) {
-        AndroidResult.failure(LayoutInspectorError.UnknownError(e.message ?: "Unknown error"))
+        AndroidInternalResult.failure(LayoutInspectorError.UnknownError(e.message ?: "Unknown error"))
     }
 }

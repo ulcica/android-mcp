@@ -56,6 +56,7 @@ object AndroidMcpConstants {
         const val SWIPE_COORDINATE = "swipe_coordinate"
         const val INPUT_TEXT = "input_text"
         const val KEY_EVENT = "key_event"
+        const val START_INTENT = "start_intent"
     }
     
     // ADB Paths (platform-specific)

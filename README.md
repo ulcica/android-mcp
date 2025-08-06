@@ -92,7 +92,7 @@ java -jar build/libs/android-mcp.jar --help
 
 ### Available Tools
 
-The Kotlin MCP server provides 9 comprehensive tools:
+The Kotlin MCP server provides 10 comprehensive tools:
 
 #### 1. `get_device_list`
 Lists all connected Android devices.
@@ -176,6 +176,20 @@ Send key event to Android device (e.g., Enter=66, Back=4, Home=3).
 - `keyCode` (required): Android key code (e.g., 66 for Enter, 4 for Back)
 
 **Output**: Success confirmation with device info, key code, and timestamp
+
+#### 10. `start_intent`
+Start an Android intent/activity with specified parameters (launch apps, open URLs, etc.).
+
+**Input**:
+- `deviceId` (optional): Android device ID
+- `action` (optional): Intent action (e.g., 'android.intent.action.MAIN', 'android.settings.SETTINGS')
+- `category` (optional): Intent category (e.g., 'android.intent.category.LAUNCHER')
+- `dataUri` (optional): Data URI for the intent (e.g., 'https://example.com', 'tel:+1234567890')
+- `packageName` (optional): Target package name (e.g., 'com.android.settings')
+- `className` (optional): Target class name (e.g., 'com.android.settings.Settings')
+- `extras` (optional): String extras to pass with the intent as key-value pairs
+
+**Output**: Success confirmation with device info, intent parameters, and timestamp
 
 ## Architecture
 
@@ -293,6 +307,7 @@ src/main/kotlin/de/cadeda/mcp/
 │       ├── SwipeCoordinateTool.kt
 │       ├── InputTextTool.kt
 │       ├── KeyEventTool.kt
+│       ├── StartIntentTool.kt
 │       └── FindElementsTool.kt
 ├── adb/                      # ADB interaction layer
 │   ├── AdbManager.kt         # Facade coordinating specialized components
@@ -377,6 +392,8 @@ claude "Click at coordinates 200,300 on my Android device"
 claude "Swipe from 100,500 to 100,200 on my Android device"
 claude "Input text 'hello world' on my Android device"
 claude "Send Enter key (code 66) to my Android device"
+claude "Start intent with action android.intent.action.MAIN and category android.intent.category.LAUNCHER"
+claude "Open Settings app using start intent"
 ```
 
 ## Use Cases

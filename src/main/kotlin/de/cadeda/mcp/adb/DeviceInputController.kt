@@ -1,6 +1,7 @@
 package de.cadeda.mcp.adb
 
 import de.cadeda.mcp.model.AndroidMcpConstants.Input
+import de.cadeda.mcp.model.AndroidResult
 import de.cadeda.mcp.model.SwipeParams
 import de.cadeda.mcp.model.uihierarchy.LayoutInspectorError
 
@@ -19,6 +20,15 @@ interface DeviceInputController {
     )
     suspend fun inputText(text: String, deviceId: String)
     suspend fun sendKeyEvent(keyCode: Int, deviceId: String)
+    suspend fun startIntent(
+        action: String? = null,
+        category: String? = null,
+        dataUri: String? = null,
+        packageName: String? = null,
+        className: String? = null,
+        extras: Map<String, String> = emptyMap(),
+        deviceId: String
+    ): Result<AndroidResult>
 
     /**
      * Overload with reduced parameter count using SwipeParams
@@ -104,6 +114,82 @@ class DefaultDeviceInputController(
                 deviceId
             )
         }
+    }
+
+    override suspend fun startIntent(
+        action: String?,
+        category: String?,
+        dataUri: String?,
+        packageName: String?,
+        className: String?,
+        extras: Map<String, String>,
+        deviceId: String
+    ): Result<AndroidResult> {
+        return try {
+            val command = buildIntentCommand(action, category, dataUri, packageName, className, extras)
+            
+            shellCommandExecutor.executeShellCommand(deviceId, command)
+            
+            Result.success(
+                AndroidResult(
+                    success = true,
+                    message = "Intent started successfully",
+                    data = mapOf(
+                        "command" to command,
+                        "action" to (action ?: ""),
+                        "packageName" to (packageName ?: ""),
+                        "className" to (className ?: ""),
+                        "category" to (category ?: ""),
+                        "dataUri" to (dataUri ?: ""),
+                        "extras" to extras.toString()
+                    )
+                )
+            )
+        } catch (e: Exception) {
+            Result.failure(
+                LayoutInspectorError.UnknownError(
+                    "Failed to start intent: ${e.message}",
+                    deviceId
+                )
+            )
+        }
+    }
+    
+    private fun buildIntentCommand(
+        action: String?,
+        category: String?,
+        dataUri: String?,
+        packageName: String?,
+        className: String?,
+        extras: Map<String, String>
+    ): String {
+        val command = StringBuilder("am start")
+        
+        // Add action
+        action?.let { command.append(" -a \"$it\"") }
+        
+        // Add category  
+        category?.let { command.append(" -c \"$it\"") }
+        
+        // Add data URI
+        dataUri?.let { command.append(" -d \"$it\"") }
+        
+        // Add extras
+        extras.forEach { (key, value) ->
+            command.append(" -e \"$key\" \"$value\"")
+        }
+        
+        // Add component (package/class)
+        when {
+            packageName != null && className != null -> {
+                command.append(" \"$packageName/$className\"")
+            }
+            packageName != null -> {
+                command.append(" \"$packageName\"")
+            }
+        }
+        
+        return command.toString()
     }
 }
 

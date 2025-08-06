@@ -1,5 +1,6 @@
 package de.cadeda.mcp.adb
 
+import de.cadeda.mcp.model.AndroidResult
 import de.cadeda.mcp.model.uihierarchy.AndroidDevice
 import de.cadeda.mcp.model.uihierarchy.CurrentActivity
 
@@ -97,6 +98,19 @@ class AdbManager private constructor(
     suspend fun sendKeyEvent(keyCode: Int, deviceId: String? = null) {
         val targetDevice = deviceId ?: getFirstAvailableDeviceId()
         inputController.sendKeyEvent(keyCode, targetDevice)
+    }
+    
+    suspend fun startIntent(
+        action: String? = null,
+        category: String? = null,
+        dataUri: String? = null,
+        packageName: String? = null,
+        className: String? = null,
+        extras: Map<String, String> = emptyMap(),
+        deviceId: String? = null
+    ): Result<AndroidResult> {
+        val targetDevice = deviceId ?: getFirstAvailableDeviceId()
+        return inputController.startIntent(action, category, dataUri, packageName, className, extras, targetDevice)
     }
     
     // Helper method to get first available device ID

@@ -181,7 +181,8 @@ class McpServer(
             ClickCoordinateTool,
             SwipeCoordinateTool,
             InputTextTool,
-            KeyEventTool
+            KeyEventTool,
+            StartIntentTool
         )
     }
 
@@ -201,6 +202,7 @@ class McpServer(
                 Tools.SWIPE_COORDINATE -> handleSwipeCoordinate(arguments, id)
                 Tools.INPUT_TEXT -> handleInputText(arguments, id)
                 Tools.KEY_EVENT -> handleKeyEvent(arguments, id)
+                Tools.START_INTENT -> handleStartIntent(arguments, id)
                 else -> createErrorResponse("Unknown tool: $name", id)
             }
         } catch (e: Exception) {
@@ -413,6 +415,25 @@ class McpServer(
         )
 
         return createContentResponse(result, id)
+    }
+
+    private suspend fun handleStartIntent(arguments: JsonObject, id: JsonElement?): String {
+        val deviceId = arguments["deviceId"]?.jsonPrimitive?.content
+        val action = arguments["action"]?.jsonPrimitive?.content
+        val category = arguments["category"]?.jsonPrimitive?.content
+        val dataUri = arguments["dataUri"]?.jsonPrimitive?.content
+        val packageName = arguments["packageName"]?.jsonPrimitive?.content
+        val className = arguments["className"]?.jsonPrimitive?.content
+        val extras = arguments["extras"]?.jsonObject?.mapValues { it.value.jsonPrimitive.content } ?: emptyMap()
+        val targetDevice = getTargetDevice(deviceId)
+
+        val result = adbManager.startIntent(action, category, dataUri, packageName, className, extras, targetDevice)
+        
+        return if (result.isSuccess) {
+            createContentResponse(result.getOrNull(), id)
+        } else {
+            createErrorResponse("Failed to start intent: ${result.exceptionOrNull()?.message}", id)
+        }
     }
 
     private fun createErrorResponse(message: String, id: JsonElement? = null): String {

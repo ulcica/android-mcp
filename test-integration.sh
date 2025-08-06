@@ -128,3 +128,12 @@ test_command "input_text" \
 test_command "key_event" \
     '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"key_event","arguments":{"keyCode":66}},"id":13}' \
     "Send key event (Enter key)"
+
+# 14. Start intent
+test_command "start_intent" \
+    '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"start_intent","arguments":{"action":"android.intent.action.MAIN","category":"android.intent.category.LAUNCHER","packageName":"com.android.settings"}},"id":14}' \
+    "Start Android intent (Settings app)"
+
+echo "🎉 Integration test completed!"
+echo "=============================="
+echo "All 14 tools tested successfully."
