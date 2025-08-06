@@ -295,62 +295,15 @@ The server includes comprehensive error handling with specific error codes:
 
 ## Development
 
-### Project Structure
+See [Development.md](Development.md) for detailed development information including:
 
-```
-src/main/kotlin/de/cadeda/mcp/
-├── Main.kt                    # Application entry point
-├── server/
-│   ├── McpServer.kt          # MCP protocol implementation
-│   └── tools/                # Individual tool implementations
-│       ├── ClickCoordinateTool.kt
-│       ├── SwipeCoordinateTool.kt
-│       ├── InputTextTool.kt
-│       ├── KeyEventTool.kt
-│       ├── StartIntentTool.kt
-│       └── FindElementsTool.kt
-├── adb/                      # ADB interaction layer
-│   ├── AdbManager.kt         # Facade coordinating specialized components
-│   ├── AdbPathResolver.kt    # ADB path discovery with caching
-│   ├── DeviceManager.kt      # Device listing and management
-│   ├── UIInspector.kt        # UI hierarchy inspection
-│   ├── DeviceInputController.kt # Input operations (tap, swipe, text, keys)
-│   ├── ShellCommandExecutor.kt  # Persistent ADB shell connections
-│   ├── UIHierarchyParser.kt  # XML parsing and element search
-│   ├── XmlExtractionUtils.kt # XML content extraction utilities
-│   └── AndroidKeyConstants.kt # Android key code constants
-└── model/
-    ├── SwipeParams.kt        # Parameter optimization for swipe operations
-    ├── AndroidMcpConstants.kt # Centralized constants
-    ├── AndroidResult.kt      # Result type for consistent error handling
-    └── uihierarchy/          # UI hierarchy types and error classes
-        └── LayoutInspectorError.kt # Specific exception types
-```
-
-### Building from Source
-
-```bash
-# Clean and build
-./gradlew clean build
-
-# Run tests
-./gradlew test
-
-# Create distribution JAR
-./gradlew jar
-```
-
-### Version Management
-
-The project version is centrally managed in `build.gradle.kts`. The build system automatically:
-- Generates `AppVersion.kt` with the current version
-- Creates a version-less JAR file (`android-mcp.jar`) for deployment stability
-- Embeds version information in the JAR manifest for debugging
-- Updates version references throughout the codebase
-
-To update the version, modify only the `version` property in `build.gradle.kts`.
-
-**JAR Naming**: The JAR uses a version-less name (`android-mcp.jar`) following best practices for standalone applications. This ensures configuration files and deployment scripts remain stable across version updates. The actual version is available via the JAR manifest and runtime version reporting.
+- Project structure and architecture
+- Building from source
+- Version management
+- Testing procedures
+- Code quality guidelines
+- Release process
+- Contributing guidelines
 
 ## MCP Integration
 
@@ -462,15 +415,6 @@ This project uses automated GitHub releases. New versions are automatically buil
 ### Download Latest Release
 
 Always download the latest version from [GitHub Releases](https://github.com/ulcica/android-mcp/releases) for the most stable experience.
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make changes in the Kotlin source files
-4. Test with `./gradlew test`
-5. Build with `./gradlew build`
-6. Submit a pull request
 
 ## License
 
