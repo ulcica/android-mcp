@@ -1,4 +1,4 @@
-# Android Layout Inspector MCP Server (Kotlin)
+# Android Layout Inspector MCP Server
 
 A Model Context Protocol (MCP) server that provides Android Layout Inspector functionality through ADB commands. This server allows LLMs and other MCP clients to inspect Android UI hierarchies, find elements, and analyze app layouts.
 
@@ -26,7 +26,7 @@ A Model Context Protocol (MCP) server that provides Android Layout Inspector fun
 
 ## Installation & Setup
 
-### 1. Build the Kotlin Application
+### 1. Build the Application
 
 ```bash
 # Build the Kotlin JAR file
@@ -44,7 +44,7 @@ Add this configuration to your Claude Desktop config file:
 ```json
 {
   "mcpServers": {
-    "android-layout-inspector-kotlin": {
+    "android-mcp": {
       "command": "java",
       "args": ["-jar", "/path/to/android-mcp/build/libs/android-mcp.jar"]
     }
