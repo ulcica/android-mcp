@@ -16,6 +16,12 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 
+### Version file
+src/main/kotlin/de/cadeda/mcp/model/AppVersion.kt
+
+### Claude memory
+CLAUDE.md
+
 ### Kotlin ###
 .kotlin
 
