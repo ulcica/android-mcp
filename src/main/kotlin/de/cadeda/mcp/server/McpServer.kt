@@ -8,12 +8,7 @@ import de.cadeda.mcp.model.AndroidMcpConstants.Input
 import de.cadeda.mcp.model.AndroidMcpConstants.Protocol
 import de.cadeda.mcp.model.AndroidMcpConstants.Timing
 import de.cadeda.mcp.model.AndroidMcpConstants.Tools
-import de.cadeda.mcp.model.AppVersion
-import de.cadeda.mcp.model.uihierarchy.AppListResult
-import de.cadeda.mcp.model.uihierarchy.ContentItem
-import de.cadeda.mcp.model.uihierarchy.CurrentActivity
-import de.cadeda.mcp.model.uihierarchy.DeviceState
-import de.cadeda.mcp.model.uihierarchy.LayoutInspectorError
+import de.cadeda.mcp.model.uihierarchy.*
 import de.cadeda.mcp.server.tools.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -184,7 +179,8 @@ class McpServer(
             SwipeCoordinateTool,
             InputTextTool,
             KeyEventTool,
-            StartIntentTool
+            StartIntentTool,
+            GetLogsTool
         )
     }
 
@@ -206,6 +202,7 @@ class McpServer(
                 Tools.INPUT_TEXT -> handleInputText(arguments, id)
                 Tools.KEY_EVENT -> handleKeyEvent(arguments, id)
                 Tools.START_INTENT -> handleStartIntent(arguments, id)
+                Tools.GET_LOGS -> handleGetLogs(arguments, id)
                 else -> createErrorResponse("Unknown tool: $name", id)
             }
         } catch (e: Exception) {
@@ -304,7 +301,7 @@ class McpServer(
         data class NotFound(
             val message: String,
             val device: String,
-            val timestamp: String = java.time.Instant.now().toString()
+            val timestamp: String = Instant.now().toString()
         ) : CurrentActivityResult()
     }
 
@@ -453,6 +450,32 @@ class McpServer(
         } else {
             createErrorResponse("Failed to start intent: ${result.exceptionOrNull()?.message}", id)
         }
+    }
+
+    private suspend fun handleGetLogs(arguments: JsonObject, id: JsonElement?): String {
+        val deviceId = arguments["deviceId"]?.jsonPrimitive?.content
+        val packageName = arguments["packageName"]?.jsonPrimitive?.content
+        val maxLines = arguments["maxLines"]?.jsonPrimitive?.int ?: 100
+        val priority = arguments["priority"]?.jsonPrimitive?.content
+        val targetDevice = getTargetDevice(deviceId)
+
+        // Validate maxLines parameter
+        val validMaxLines = maxLines.coerceIn(1, 1000)
+
+        val logEntries = adbManager.getLogs(packageName, validMaxLines, priority, targetDevice)
+        
+        val result = LogResult(
+            device = targetDevice,
+            entries = logEntries,
+            count = logEntries.size,
+            filters = LogFilters(
+                packageName = packageName,
+                maxLines = validMaxLines,
+                priority = priority
+            )
+        )
+
+        return createContentResponse(result, id)
     }
 
     private fun createErrorResponse(message: String, id: JsonElement? = null): String {

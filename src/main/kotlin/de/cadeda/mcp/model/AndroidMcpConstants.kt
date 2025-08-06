@@ -58,6 +58,7 @@ object AndroidMcpConstants {
         const val INPUT_TEXT = "input_text"
         const val KEY_EVENT = "key_event"
         const val START_INTENT = "start_intent"
+        const val GET_LOGS = "get_logs"
     }
     
     // ADB Paths (platform-specific)

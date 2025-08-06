@@ -11,7 +11,8 @@ import de.cadeda.mcp.model.uihierarchy.CurrentActivity
 class AdbManager private constructor(
     private val deviceManager: DeviceManager,
     private val uiInspector: UIInspector,
-    private val inputController: DeviceInputController
+    private val inputController: DeviceInputController,
+    private val logInspector: LogInspector
 ) {
     companion object {
         @Volatile
@@ -32,8 +33,9 @@ class AdbManager private constructor(
             val shellCommandExecutor = PersistentShellCommandExecutor(adbPathResolver)
             val uiInspector = DefaultUIInspector(shellCommandExecutor, adbPathResolver)
             val inputController = DefaultDeviceInputController(shellCommandExecutor, adbPathResolver)
+            val logInspector = DefaultLogInspector(shellCommandExecutor, adbPathResolver)
             
-            return AdbManager(deviceManager, uiInspector, inputController)
+            return AdbManager(deviceManager, uiInspector, inputController, logInspector)
         }
         
         /**
@@ -42,9 +44,10 @@ class AdbManager private constructor(
         fun createInstance(
             deviceManager: DeviceManager,
             uiInspector: UIInspector,
-            inputController: DeviceInputController
+            inputController: DeviceInputController,
+            logInspector: LogInspector
         ): AdbManager {
-            return AdbManager(deviceManager, uiInspector, inputController)
+            return AdbManager(deviceManager, uiInspector, inputController, logInspector)
         }
     }
     
@@ -117,6 +120,22 @@ class AdbManager private constructor(
     ): Result<AndroidResult> {
         val targetDevice = deviceId ?: getFirstAvailableDeviceId()
         return inputController.startIntent(action, category, dataUri, packageName, className, extras, targetDevice)
+    }
+    
+    // Log Inspection - delegates to LogInspector
+    suspend fun getLogs(
+        packageName: String? = null,
+        maxLines: Int = 100,
+        priority: String? = null,
+        deviceId: String? = null
+    ): List<LogEntry> {
+        val targetDevice = deviceId ?: getFirstAvailableDeviceId()
+        return logInspector.getFilteredLogs(targetDevice, packageName, maxLines, priority)
+    }
+    
+    suspend fun clearLogs(deviceId: String? = null): Boolean {
+        val targetDevice = deviceId ?: getFirstAvailableDeviceId()
+        return logInspector.clearLogs(targetDevice)
     }
     
     // Helper method to get first available device ID

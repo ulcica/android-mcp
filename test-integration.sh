@@ -139,6 +139,11 @@ test_command "start_intent" \
     '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"start_intent","arguments":{"action":"android.intent.action.MAIN","category":"android.intent.category.LAUNCHER","packageName":"com.android.settings"}},"id":15}' \
     "Start Android intent (Settings app)"
 
+# 16. Get logs
+test_command "get_logs" \
+    '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"get_logs","arguments":{"maxLines":20,"priority":"I"}},"id":16}' \
+    "Get device logs with priority filter"
+
 echo "🎉 Integration test completed!"
 echo "=============================="
-echo "All 15 tools tested successfully."
+echo "All 16 tools tested successfully."
