@@ -9,6 +9,7 @@ import de.cadeda.mcp.model.AndroidMcpConstants.Protocol
 import de.cadeda.mcp.model.AndroidMcpConstants.Timing
 import de.cadeda.mcp.model.AndroidMcpConstants.Tools
 import de.cadeda.mcp.model.AppVersion
+import de.cadeda.mcp.model.uihierarchy.AppListResult
 import de.cadeda.mcp.model.uihierarchy.ContentItem
 import de.cadeda.mcp.model.uihierarchy.CurrentActivity
 import de.cadeda.mcp.model.uihierarchy.DeviceState
@@ -165,6 +166,7 @@ class McpServer(
     private fun createToolDefinitions(): List<Tool> {
         return listOf(
             DeviceListTool,
+            AppListTool,
             DeviceOptionalTool(
                 Tools.GET_VIEW_ATTRIBUTES,
                 "Get UI hierarchy with enhanced view attributes (enables debug mode temporarily)"
@@ -194,6 +196,7 @@ class McpServer(
 
             when (name) {
                 Tools.GET_DEVICE_LIST -> handleGetDeviceList(id)
+                Tools.GET_APP_LIST -> handleGetAppList(arguments, id)
                 Tools.GET_VIEW_ATTRIBUTES -> handleGetViewAttributes(arguments, id)
                 Tools.GET_CURRENT_ACTIVITY -> handleGetCurrentActivity(arguments, id)
                 Tools.FIND_ELEMENTS -> handleFindElements(arguments, id)
@@ -239,6 +242,22 @@ class McpServer(
     private suspend fun handleGetDeviceList(id: JsonElement?): String {
         val devices = adbManager.getDevices()
         return createContentResponse(devices, id)
+    }
+
+    private suspend fun handleGetAppList(arguments: JsonObject, id: JsonElement?): String {
+        val deviceId = arguments["deviceId"]?.jsonPrimitive?.content
+        val includeSystemApps = arguments["includeSystemApps"]?.jsonPrimitive?.boolean ?: false
+        val targetDevice = getTargetDevice(deviceId)
+
+        val apps = adbManager.getAppList(targetDevice, includeSystemApps)
+        val result = AppListResult(
+            device = targetDevice,
+            apps = apps,
+            count = apps.size,
+            includeSystemApps = includeSystemApps
+        )
+
+        return createContentResponse(result, id)
     }
 
     private suspend fun handleGetViewAttributes(arguments: JsonObject, id: JsonElement?): String {

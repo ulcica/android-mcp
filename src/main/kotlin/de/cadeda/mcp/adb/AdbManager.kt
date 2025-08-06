@@ -1,6 +1,7 @@
 package de.cadeda.mcp.adb
 
 import de.cadeda.mcp.model.AndroidResult
+import de.cadeda.mcp.model.uihierarchy.AndroidApp
 import de.cadeda.mcp.model.uihierarchy.AndroidDevice
 import de.cadeda.mcp.model.uihierarchy.CurrentActivity
 
@@ -50,6 +51,11 @@ class AdbManager private constructor(
     // Device Management - delegates to DeviceManager
     suspend fun getDevices(): List<AndroidDevice> {
         return deviceManager.getDevices()
+    }
+    
+    suspend fun getAppList(deviceId: String? = null, includeSystemApps: Boolean = false): List<AndroidApp> {
+        val targetDevice = deviceId ?: getFirstAvailableDeviceId()
+        return deviceManager.getAppList(targetDevice, includeSystemApps)
     }
     
     // UI Inspection - delegates to UIInspector

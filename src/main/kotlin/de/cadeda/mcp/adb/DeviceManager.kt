@@ -1,11 +1,13 @@
 package de.cadeda.mcp.adb
 
+import de.cadeda.mcp.model.uihierarchy.AndroidApp
 import de.cadeda.mcp.model.uihierarchy.AndroidDevice
 import de.cadeda.mcp.model.uihierarchy.CommandResult
 import de.cadeda.mcp.model.uihierarchy.DeviceState
 import de.cadeda.mcp.model.uihierarchy.LayoutInspectorError
 import de.cadeda.mcp.model.AndroidMcpConstants.ErrorMessages
 import de.cadeda.mcp.model.AndroidMcpConstants.Patterns
+import de.cadeda.mcp.model.AndroidMcpConstants.ShellCommands
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.concurrent.ConcurrentHashMap
@@ -17,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap
 interface DeviceManager {
     suspend fun getDevices(): List<AndroidDevice>
     suspend fun getFirstAvailableDevice(): AndroidDevice
+    suspend fun getAppList(deviceId: String, includeSystemApps: Boolean = false): List<AndroidApp>
 }
 
 /**
@@ -119,6 +122,50 @@ class DefaultDeviceManager(
         }
     }
     
+    override suspend fun getAppList(deviceId: String, includeSystemApps: Boolean): List<AndroidApp> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val adbPath = adbPathResolver.findAdbPath()
+                val shellCommand = if (includeSystemApps) {
+                    "pm list packages"
+                } else {
+                    ShellCommands.LIST_PACKAGES
+                }
+                
+                val result = executeCommand(adbPath, "-s", deviceId, "shell", shellCommand)
+                if (result.isFailure) {
+                    throw LayoutInspectorError.UnknownError(
+                        "Failed to execute app list command on device $deviceId: ${result.exceptionOrNull()?.message}",
+                        deviceId
+                    )
+                }
+                
+                parsePackageList(result.getOrThrow().stdout)
+            } catch (e: Exception) {
+                throw LayoutInspectorError.UnknownError(
+                    "Failed to get app list from device $deviceId: ${e.message}",
+                    deviceId
+                )
+            }
+        }
+    }
+    
+    private fun parsePackageList(output: String): List<AndroidApp> {
+        return output.lines()
+            .filter { it.startsWith("package:") }
+            .mapNotNull { line ->
+                val packageName = line.substringAfter("package:")
+                if (packageName.isNotBlank()) {
+                    AndroidApp(
+                        packageName = packageName,
+                        appName = null, // We could get this with additional pm dump calls if needed
+                        isSystemApp = !line.contains("-3") // -3 flag shows only non-system apps
+                    )
+                } else null
+            }
+            .sortedBy { it.packageName }
+    }
+
     /**
      * Clears the device cache. Useful for testing or when devices change.
      */

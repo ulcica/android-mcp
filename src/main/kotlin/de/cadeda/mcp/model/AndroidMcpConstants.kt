@@ -48,6 +48,7 @@ object AndroidMcpConstants {
     // Tool Names
     object Tools {
         const val GET_DEVICE_LIST = "get_device_list"
+        const val GET_APP_LIST = "get_app_list"
         const val GET_VIEW_ATTRIBUTES = "get_view_attributes"
         const val GET_CURRENT_ACTIVITY = "get_current_activity"
         const val FIND_ELEMENTS = "find_elements"
@@ -78,6 +79,7 @@ object AndroidMcpConstants {
         const val UI_DUMP = "uiautomator dump /dev/tty"
         const val WINDOW_DUMP = "dumpsys window | grep -E \"mCurrentFocus|mFocusedApp\" | head -5"
         const val ACTIVITY_DUMP = "dumpsys activity activities | grep -A2 -B1 \"topResumedActivity\\|packageName=\\|processName=\" | head -10"
+        const val LIST_PACKAGES = "pm list packages -3"
     }
     
     // Regex Patterns

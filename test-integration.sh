@@ -89,51 +89,56 @@ test_command "get_device_list" \
     '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"get_device_list","arguments":{}},"id":5}' \
     "List connected Android devices"
 
-# 6. Get current activity
+# 6. Get app list
+test_command "get_app_list" \
+    '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"get_app_list","arguments":{"includeSystemApps":false}},"id":6}' \
+    "List user-installed Android apps"
+
+# 7. Get current activity
 test_command "get_current_activity" \
-    '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"get_current_activity","arguments":{}},"id":6}' \
+    '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"get_current_activity","arguments":{}},"id":7}' \
     "Get current foreground activity"
 
-# 7. Get view attributes
+# 8. Get view attributes
 test_command "get_view_attributes" \
-    '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"get_view_attributes","arguments":{}},"id":7}' \
+    '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"get_view_attributes","arguments":{}},"id":8}' \
     "Get UI hierarchy with debug attributes"
 
-# 8. View hierarchy
+# 9. View hierarchy
 test_command "view_hierarchy" \
-    '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"view_hierarchy","arguments":{}},"id":8}' \
+    '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"view_hierarchy","arguments":{}},"id":9}' \
     "Get standard UI hierarchy"
 
-# 9. Find elements
+# 10. Find elements
 test_command "find_elements" \
-    '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"find_elements","arguments":{"text":"Settings","exactMatch":false}},"id":9}' \
+    '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"find_elements","arguments":{"text":"Settings","exactMatch":false}},"id":10}' \
     "Find UI elements by text"
 
-# 10. Click coordinate
+# 11. Click coordinate
 test_command "click_coordinate" \
-    '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"click_coordinate","arguments":{"x":500,"y":1000}},"id":10}' \
+    '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"click_coordinate","arguments":{"x":500,"y":1000}},"id":11}' \
     "Click at screen coordinates"
 
-# 11. Swipe coordinate
+# 12. Swipe coordinate
 test_command "swipe_coordinate" \
-    '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"swipe_coordinate","arguments":{"startX":500,"startY":1500,"endX":500,"endY":500,"duration":300}},"id":11}' \
+    '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"swipe_coordinate","arguments":{"startX":500,"startY":1500,"endX":500,"endY":500,"duration":300}},"id":12}' \
     "Swipe between coordinates"
 
-# 12. Input text
+# 13. Input text
 test_command "input_text" \
-    '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"input_text","arguments":{"text":"hello world"}},"id":12}' \
+    '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"input_text","arguments":{"text":"hello world"}},"id":13}' \
     "Input text on device"
 
-# 13. Key event
+# 14. Key event
 test_command "key_event" \
-    '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"key_event","arguments":{"keyCode":66}},"id":13}' \
+    '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"key_event","arguments":{"keyCode":66}},"id":14}' \
     "Send key event (Enter key)"
 
-# 14. Start intent
+# 15. Start intent
 test_command "start_intent" \
-    '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"start_intent","arguments":{"action":"android.intent.action.MAIN","category":"android.intent.category.LAUNCHER","packageName":"com.android.settings"}},"id":14}' \
+    '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"start_intent","arguments":{"action":"android.intent.action.MAIN","category":"android.intent.category.LAUNCHER","packageName":"com.android.settings"}},"id":15}' \
     "Start Android intent (Settings app)"
 
 echo "🎉 Integration test completed!"
 echo "=============================="
-echo "All 14 tools tested successfully."
+echo "All 15 tools tested successfully."

@@ -92,7 +92,7 @@ java -jar build/libs/android-mcp.jar --help
 
 ### Available Tools
 
-The Kotlin MCP server provides 10 comprehensive tools:
+The Kotlin MCP server provides 11 comprehensive tools:
 
 #### 1. `get_device_list`
 Lists all connected Android devices.
@@ -100,7 +100,16 @@ Lists all connected Android devices.
 **Input**: None
 **Output**: Array of connected devices with their IDs, states, and models
 
-#### 2. `get_current_activity`
+#### 2. `get_app_list`
+Gets list of installed applications on the Android device.
+
+**Input**:
+- `deviceId` (optional): Android device ID
+- `includeSystemApps` (optional): Include system applications in the list (default: false, shows only user-installed apps)
+
+**Output**: Array of installed applications with package names, sorted alphabetically
+
+#### 3. `get_current_activity`
 Gets enhanced information about the current foreground activity.
 
 **Input**:
@@ -338,6 +347,8 @@ claude mcp add android-mcp java -jar /path/to/android-mcp/build/libs/android-mcp
 **Usage Examples:**
 ```bash
 claude "List my connected Android devices"
+claude "Show me the installed apps on my Android device"
+claude "Get all apps including system apps from my Android device"
 claude "Show me the UI hierarchy of my Android screen"
 claude "Get the view hierarchy with rotation info from my Android device"
 claude "Find elements with text Settings on my Android device"
@@ -352,9 +363,10 @@ claude "Open Settings app using start intent"
 ## Use Cases
 
 - **UI Testing**: Automated testing of Android applications
+- **App Discovery**: Discover and analyze installed applications on Android devices
 - **Accessibility Analysis**: Analyze app accessibility properties
 - **Layout Debugging**: Debug layout issues and element positioning
-- **App Analysis**: Reverse engineer app UI structures
+- **App Analysis**: Reverse engineer app UI structures and discover available packages
 - **Quality Assurance**: Validate UI consistency across screens
 - **Automated Interaction**: Programmatically interact with Android apps through touch events, swipes, and text input
 - **Performance Testing**: Measure UI response times and interaction latencies
