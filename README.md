@@ -1,6 +1,6 @@
-# Android Layout Inspector MCP Server
+# Android MCP Server
 
-A Model Context Protocol (MCP) server that provides Android Layout Inspector functionality through ADB commands. This server allows LLMs and other MCP clients to inspect Android UI hierarchies, find elements, and analyze app layouts.
+A Model Context Protocol (MCP) server that provides powerful inspection and interaction tools for connected android devices or emulators.
 
 ## Features
 
