@@ -88,6 +88,14 @@ class AdbManager private constructor(
         inputController.longPressCoordinate(x, y, duration, targetDevice)
     }
     
+    suspend fun dragCoordinate(
+        startX: Int, startY: Int, endX: Int, endY: Int,
+        duration: Int = 300, deviceId: String? = null
+    ) {
+        val targetDevice = deviceId ?: getFirstAvailableDeviceId()
+        inputController.dragCoordinate(startX, startY, endX, endY, duration, targetDevice)
+    }
+    
     suspend fun swipeCoordinate(
         startX: Int, startY: Int, endX: Int, endY: Int, 
         duration: Int = 300, deviceId: String? = null

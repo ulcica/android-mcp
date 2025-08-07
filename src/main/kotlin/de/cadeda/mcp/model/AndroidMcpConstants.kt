@@ -56,6 +56,7 @@ object AndroidMcpConstants {
         const val VIEW_HIERARCHY = "view_hierarchy"
         const val CLICK_COORDINATE = "click_coordinate"
         const val LONG_PRESS_COORDINATE = "long_press_coordinate"
+        const val DRAG_COORDINATE = "drag_coordinate"
         const val SWIPE_COORDINATE = "swipe_coordinate"
         const val INPUT_TEXT = "input_text"
         const val KEY_EVENT = "key_event"

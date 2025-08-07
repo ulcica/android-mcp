@@ -124,31 +124,36 @@ test_command "long_press_coordinate" \
     '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"long_press_coordinate","arguments":{"x":500,"y":1000,"duration":500}},"id":12}' \
     "Long press at screen coordinates"
 
-# 13. Swipe coordinate
+# 13. Drag coordinate
+test_command "drag_coordinate" \
+    '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"drag_coordinate","arguments":{"startX":400,"startY":800,"endX":600,"endY":600,"duration":800}},"id":13}' \
+    "Drag from one coordinate to another"
+
+# 14. Swipe coordinate
 test_command "swipe_coordinate" \
-    '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"swipe_coordinate","arguments":{"startX":500,"startY":1500,"endX":500,"endY":500,"duration":300}},"id":13}' \
+    '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"swipe_coordinate","arguments":{"startX":500,"startY":1500,"endX":500,"endY":500,"duration":300}},"id":14}' \
     "Swipe between coordinates"
 
-# 14. Input text
+# 15. Input text
 test_command "input_text" \
-    '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"input_text","arguments":{"text":"hello world"}},"id":14}' \
+    '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"input_text","arguments":{"text":"hello world"}},"id":15}' \
     "Input text on device"
 
-# 15. Key event
+# 16. Key event
 test_command "key_event" \
-    '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"key_event","arguments":{"keyCode":66}},"id":15}' \
+    '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"key_event","arguments":{"keyCode":66}},"id":16}' \
     "Send key event (Enter key)"
 
-# 16. Start intent
+# 17. Start intent
 test_command "start_intent" \
-    '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"start_intent","arguments":{"action":"android.intent.action.MAIN","category":"android.intent.category.LAUNCHER","packageName":"me.ulcica.home"}},"id":16}' \
+    '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"start_intent","arguments":{"action":"android.intent.action.MAIN","category":"android.intent.category.LAUNCHER","packageName":"me.ulcica.home"}},"id":17}' \
     "Start Android intent (Settings app)"
 
-# 17. Get logs
+# 18. Get logs
 test_command "get_logs" \
-    '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"get_logs","arguments":{"maxLines":20,"priority":"I"}},"id":17}' \
+    '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"get_logs","arguments":{"maxLines":20,"priority":"I"}},"id":18}' \
     "Get device logs with priority filter"
 
 echo "🎉 Integration test completed!"
 echo "=============================="
-echo "All 17 tools tested successfully."
+echo "All 18 tools tested successfully."

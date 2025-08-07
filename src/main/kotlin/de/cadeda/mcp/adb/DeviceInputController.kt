@@ -11,6 +11,14 @@ import de.cadeda.mcp.model.uihierarchy.LayoutInspectorError
 interface DeviceInputController {
     suspend fun clickCoordinate(x: Int, y: Int, deviceId: String)
     suspend fun longPressCoordinate(x: Int, y: Int, duration: Int, deviceId: String)
+    suspend fun dragCoordinate(
+        startX: Int,
+        startY: Int,
+        endX: Int,
+        endY: Int,
+        duration: Int,
+        deviceId: String
+    )
     suspend fun swipeCoordinate(
         startX: Int,
         startY: Int,
@@ -82,6 +90,28 @@ class DefaultDeviceInputController(
         } catch (e: Exception) {
             throw LayoutInspectorError.UnknownError(
                 "Failed to long press at coordinates ($x, $y): ${e.message}",
+                deviceId
+            )
+        }
+    }
+
+    override suspend fun dragCoordinate(
+        startX: Int,
+        startY: Int,
+        endX: Int,
+        endY: Int,
+        duration: Int,
+        deviceId: String
+    ) {
+        val dragDuration = if (duration > 0) duration else Input.DEFAULT_SWIPE_DURATION_MS
+        try {
+            shellCommandExecutor.executeShellCommand(
+                deviceId,
+                "input draganddrop $startX $startY $endX $endY $dragDuration"
+            )
+        } catch (e: Exception) {
+            throw LayoutInspectorError.UnknownError(
+                "Failed to drag from ($startX, $startY) to ($endX, $endY): ${e.message}",
                 deviceId
             )
         }

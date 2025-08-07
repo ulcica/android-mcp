@@ -177,6 +177,7 @@ class McpServer(
             ),
             ClickCoordinateTool,
             LongPressCoordinateTool,
+            DragCoordinateTool,
             SwipeCoordinateTool,
             InputTextTool,
             KeyEventTool,
@@ -200,6 +201,7 @@ class McpServer(
                 Tools.VIEW_HIERARCHY -> handleViewHierarchy(arguments, id)
                 Tools.CLICK_COORDINATE -> handleClickCoordinate(arguments, id)
                 Tools.LONG_PRESS_COORDINATE -> handleLongPressCoordinate(arguments, id)
+                Tools.DRAG_COORDINATE -> handleDragCoordinate(arguments, id)
                 Tools.SWIPE_COORDINATE -> handleSwipeCoordinate(arguments, id)
                 Tools.INPUT_TEXT -> handleInputText(arguments, id)
                 Tools.KEY_EVENT -> handleKeyEvent(arguments, id)
@@ -394,6 +396,29 @@ class McpServer(
             success = true
         )
 
+        return createContentResponse(result, id)
+    }
+
+    private suspend fun handleDragCoordinate(arguments: JsonObject, id: JsonElement?): String {
+        val deviceId = arguments["deviceId"]?.jsonPrimitive?.content
+        val startX = arguments["startX"]?.jsonPrimitive?.int ?: throw LayoutInspectorError.McpProtocolError("Missing startX coordinate")
+        val startY = arguments["startY"]?.jsonPrimitive?.int ?: throw LayoutInspectorError.McpProtocolError("Missing startY coordinate")
+        val endX = arguments["endX"]?.jsonPrimitive?.int ?: throw LayoutInspectorError.McpProtocolError("Missing endX coordinate")
+        val endY = arguments["endY"]?.jsonPrimitive?.int ?: throw LayoutInspectorError.McpProtocolError("Missing endY coordinate")
+        val duration = arguments["duration"]?.jsonPrimitive?.int ?: Input.DEFAULT_SWIPE_DURATION_MS
+
+        val targetDevice = getTargetDevice(deviceId)
+        adbManager.dragCoordinate(startX, startY, endX, endY, duration, targetDevice)
+
+        val result = SwipeCoordinateResult(
+            device = targetDevice,
+            action = "drag",
+            startCoordinates = Coordinates(startX, startY),
+            endCoordinates = Coordinates(endX, endY),
+            duration = duration,
+            timestamp = Instant.now().toString(),
+            success = true
+        )
         return createContentResponse(result, id)
     }
 
