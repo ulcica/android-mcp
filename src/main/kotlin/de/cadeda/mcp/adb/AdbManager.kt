@@ -83,6 +83,11 @@ class AdbManager private constructor(
         inputController.clickCoordinate(x, y, targetDevice)
     }
     
+    suspend fun longPressCoordinate(x: Int, y: Int, duration: Int = 1000, deviceId: String? = null) {
+        val targetDevice = deviceId ?: getFirstAvailableDeviceId()
+        inputController.longPressCoordinate(x, y, duration, targetDevice)
+    }
+    
     suspend fun swipeCoordinate(
         startX: Int, startY: Int, endX: Int, endY: Int, 
         duration: Int = 300, deviceId: String? = null

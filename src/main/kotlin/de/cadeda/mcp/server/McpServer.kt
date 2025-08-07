@@ -176,6 +176,7 @@ class McpServer(
                 "Get the UI view hierarchy from uiautomator dump"
             ),
             ClickCoordinateTool,
+            LongPressCoordinateTool,
             SwipeCoordinateTool,
             InputTextTool,
             KeyEventTool,
@@ -198,6 +199,7 @@ class McpServer(
                 Tools.FIND_ELEMENTS -> handleFindElements(arguments, id)
                 Tools.VIEW_HIERARCHY -> handleViewHierarchy(arguments, id)
                 Tools.CLICK_COORDINATE -> handleClickCoordinate(arguments, id)
+                Tools.LONG_PRESS_COORDINATE -> handleLongPressCoordinate(arguments, id)
                 Tools.SWIPE_COORDINATE -> handleSwipeCoordinate(arguments, id)
                 Tools.INPUT_TEXT -> handleInputText(arguments, id)
                 Tools.KEY_EVENT -> handleKeyEvent(arguments, id)
@@ -365,6 +367,28 @@ class McpServer(
         val result = ClickCoordinateResult(
             device = targetDevice,
             action = "click",
+            coordinates = Coordinates(x, y),
+            timestamp = Instant.now().toString(),
+            success = true
+        )
+
+        return createContentResponse(result, id)
+    }
+
+    private suspend fun handleLongPressCoordinate(arguments: JsonObject, id: JsonElement?): String {
+        val deviceId = arguments["deviceId"]?.jsonPrimitive?.content
+        val x =
+            arguments["x"]?.jsonPrimitive?.int ?: throw LayoutInspectorError.McpProtocolError("Missing x coordinate")
+        val y =
+            arguments["y"]?.jsonPrimitive?.int ?: throw LayoutInspectorError.McpProtocolError("Missing y coordinate")
+        val duration = arguments["duration"]?.jsonPrimitive?.int ?: 1000
+        val targetDevice = getTargetDevice(deviceId)
+
+        adbManager.longPressCoordinate(x, y, duration, targetDevice)
+
+        val result = ClickCoordinateResult(
+            device = targetDevice,
+            action = "long_press",
             coordinates = Coordinates(x, y),
             timestamp = Instant.now().toString(),
             success = true

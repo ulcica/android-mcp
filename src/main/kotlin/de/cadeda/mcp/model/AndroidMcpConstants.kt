@@ -19,6 +19,7 @@ object AndroidMcpConstants {
     // Input Constants
     object Input {
         const val DEFAULT_SWIPE_DURATION_MS = 300 // milliseconds
+        const val DEFAULT_LONG_PRESS_DURATION_MS = 1000 // milliseconds (1 second)
         const val SHELL_COMMAND_POLL_INTERVAL_MS = 10L // milliseconds
     }
     
@@ -54,6 +55,7 @@ object AndroidMcpConstants {
         const val FIND_ELEMENTS = "find_elements"
         const val VIEW_HIERARCHY = "view_hierarchy"
         const val CLICK_COORDINATE = "click_coordinate"
+        const val LONG_PRESS_COORDINATE = "long_press_coordinate"
         const val SWIPE_COORDINATE = "swipe_coordinate"
         const val INPUT_TEXT = "input_text"
         const val KEY_EVENT = "key_event"

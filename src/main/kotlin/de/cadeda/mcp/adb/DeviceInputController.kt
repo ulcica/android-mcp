@@ -10,6 +10,7 @@ import de.cadeda.mcp.model.uihierarchy.LayoutInspectorError
  */
 interface DeviceInputController {
     suspend fun clickCoordinate(x: Int, y: Int, deviceId: String)
+    suspend fun longPressCoordinate(x: Int, y: Int, duration: Int, deviceId: String)
     suspend fun swipeCoordinate(
         startX: Int,
         startY: Int,
@@ -64,6 +65,23 @@ class DefaultDeviceInputController(
         } catch (e: Exception) {
             throw LayoutInspectorError.UnknownError(
                 "Failed to click at coordinates ($x, $y): ${e.message}",
+                deviceId
+            )
+        }
+    }
+
+    override suspend fun longPressCoordinate(x: Int, y: Int, duration: Int, deviceId: String) {
+        val pressDuration = if (duration > 0) duration else Input.DEFAULT_LONG_PRESS_DURATION_MS
+        
+        try {
+            // Long press is implemented as a swipe with the same start and end coordinates
+            shellCommandExecutor.executeShellCommand(
+                deviceId, 
+                "input swipe $x $y $x $y $pressDuration"
+            )
+        } catch (e: Exception) {
+            throw LayoutInspectorError.UnknownError(
+                "Failed to long press at coordinates ($x, $y): ${e.message}",
                 deviceId
             )
         }
