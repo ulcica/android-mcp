@@ -126,7 +126,16 @@ class DefaultDeviceInputController(
         deviceId: String
     ): Result<AndroidResult> {
         return try {
-            val command = buildIntentCommand(action, category, dataUri, packageName, className, extras)
+            // Auto-discover main launcher activity if packageName is provided without className
+            val resolvedClassName = if (packageName != null && className == null && 
+                                       action == "android.intent.action.MAIN" && 
+                                       category == "android.intent.category.LAUNCHER") {
+                discoverMainActivity(packageName, deviceId)
+            } else {
+                className
+            }
+            
+            val command = buildIntentCommand(action, category, dataUri, packageName, resolvedClassName, extras)
             
             shellCommandExecutor.executeShellCommand(deviceId, command)
             
@@ -138,7 +147,7 @@ class DefaultDeviceInputController(
                         "command" to command,
                         "action" to (action ?: ""),
                         "packageName" to (packageName ?: ""),
-                        "className" to (className ?: ""),
+                        "className" to (resolvedClassName ?: ""),
                         "category" to (category ?: ""),
                         "dataUri" to (dataUri ?: ""),
                         "extras" to extras.toString()
@@ -152,6 +161,30 @@ class DefaultDeviceInputController(
                     deviceId
                 )
             )
+        }
+    }
+    
+    /**
+     * Discovers the main launcher activity for a package by querying the package manager
+     */
+    private suspend fun discoverMainActivity(packageName: String, deviceId: String): String? {
+        return try {
+            val result = shellCommandExecutor.executeShellCommand(
+                deviceId, 
+                "pm dump $packageName | grep -A 1 'android.intent.action.MAIN:' | tail -n 1"
+            )
+            
+            // Parse the output to extract the activity class
+            // Expected format: "        9802556 me.ulcica.home/.MainActivity filter d7449d7"
+            val activityMatch = Regex("""$packageName/([.\w]+)\s""").find(result.stdout)
+            if (activityMatch != null) {
+                val className = activityMatch.groupValues[1]
+                // Return the className (e.g., ".MainActivity")
+                return className
+            }
+            null
+        } catch (_: Exception) {
+            null // Fallback to null if discovery fails
         }
     }
     
