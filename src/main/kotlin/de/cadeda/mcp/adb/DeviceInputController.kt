@@ -80,11 +80,11 @@ class DefaultDeviceInputController(
 
     override suspend fun longPressCoordinate(x: Int, y: Int, duration: Int, deviceId: String) {
         val pressDuration = if (duration > 0) duration else Input.DEFAULT_LONG_PRESS_DURATION_MS
-        
+
         try {
             // Long press is implemented as a swipe with the same start and end coordinates
             shellCommandExecutor.executeShellCommand(
-                deviceId, 
+                deviceId,
                 "input swipe $x $y $x $y $pressDuration"
             )
         } catch (e: Exception) {
@@ -175,18 +175,18 @@ class DefaultDeviceInputController(
     ): Result<AndroidResult> {
         return try {
             // Auto-discover main launcher activity if packageName is provided without className
-            val resolvedClassName = if (packageName != null && className == null && 
-                                       action == "android.intent.action.MAIN" && 
+            val resolvedClassName = if (packageName != null && className == null &&
+                                       action == "android.intent.action.MAIN" &&
                                        category == "android.intent.category.LAUNCHER") {
                 discoverMainActivity(packageName, deviceId)
             } else {
                 className
             }
-            
+
             val command = buildIntentCommand(action, category, dataUri, packageName, resolvedClassName, extras)
-            
+
             shellCommandExecutor.executeShellCommand(deviceId, command)
-            
+
             Result.success(
                 AndroidResult(
                     success = true,
@@ -211,7 +211,7 @@ class DefaultDeviceInputController(
             )
         }
     }
-    
+
     /**
      * Discovers the main launcher activity for a package by querying the package manager
      */
@@ -219,10 +219,10 @@ class DefaultDeviceInputController(
         return try {
             // Use pm resolve-activity to get the default MAIN/LAUNCHER activity for this package
             val result = shellCommandExecutor.executeShellCommand(
-                deviceId, 
+                deviceId,
                 "pm resolve-activity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER $packageName"
             )
-            
+
             // Parse the output to extract the activity class
             // Look for either targetActivity (for aliases) or name (for direct activities)
             val targetActivityMatch = Regex("""targetActivity=(\S+)""").find(result.stdout)
@@ -233,7 +233,7 @@ class DefaultDeviceInputController(
                 val nameMatch = Regex("""name=(\S+)""").find(result.stdout)
                 nameMatch?.groupValues?.get(1)
             }
-            
+
             // Extract the class part from full activity name
             activityName?.let { fullName ->
                 // If activity name starts with package, remove the package prefix
@@ -244,13 +244,13 @@ class DefaultDeviceInputController(
                     return fullName
                 }
             }
-            
+
             null
         } catch (_: Exception) {
             null // Fallback to null if discovery fails
         }
     }
-    
+
     private fun buildIntentCommand(
         action: String?,
         category: String?,
@@ -260,21 +260,21 @@ class DefaultDeviceInputController(
         extras: Map<String, String>
     ): String {
         val command = StringBuilder("am start")
-        
+
         // Add action
         action?.let { command.append(" -a \"$it\"") }
-        
-        // Add category  
+
+        // Add category
         category?.let { command.append(" -c \"$it\"") }
-        
+
         // Add data URI
         dataUri?.let { command.append(" -d \"$it\"") }
-        
+
         // Add extras
         extras.forEach { (key, value) ->
             command.append(" -e \"$key\" \"$value\"")
         }
-        
+
         // Add component (package/class)
         when {
             packageName != null && className != null -> {
@@ -284,7 +284,7 @@ class DefaultDeviceInputController(
                 command.append(" \"$packageName\"")
             }
         }
-        
+
         return command.toString()
     }
 }

@@ -27,9 +27,9 @@ Options:
             exitProcess(0)
         }
     }
-    
+
     val server = McpServer()
-    
+
     runBlocking {
         try {
             server.start()
@@ -40,7 +40,7 @@ Options:
             exitProcess(1)
         }
     }
-    
+
     // Server completed normally, exit cleanly
     exitProcess(0)
 }

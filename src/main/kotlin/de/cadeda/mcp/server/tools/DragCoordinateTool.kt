@@ -1,6 +1,8 @@
 package de.cadeda.mcp.server.tools
 
-import de.cadeda.mcp.model.*
+import de.cadeda.mcp.model.InputSchema
+import de.cadeda.mcp.model.PropertyDefinition
+import de.cadeda.mcp.model.Tool
 import de.cadeda.mcp.model.AndroidMcpConstants.Tools
 
 /**
@@ -21,7 +23,7 @@ object DragCoordinateTool : Tool(
                 description = "Starting X coordinate for drag gesture"
             ),
             "startY" to PropertyDefinition(
-                type = "number", 
+                type = "number",
                 description = "Starting Y coordinate for drag gesture"
             ),
             "endX" to PropertyDefinition(
@@ -30,7 +32,7 @@ object DragCoordinateTool : Tool(
             ),
             "endY" to PropertyDefinition(
                 type = "number",
-                description = "Ending Y coordinate for drag gesture" 
+                description = "Ending Y coordinate for drag gesture"
             ),
             "duration" to PropertyDefinition(
                 type = "number",

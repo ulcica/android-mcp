@@ -1,6 +1,8 @@
 package de.cadeda.mcp.server.tools
 
-import de.cadeda.mcp.model.*
+import de.cadeda.mcp.model.InputSchema
+import de.cadeda.mcp.model.PropertyDefinition
+import de.cadeda.mcp.model.Tool
 import de.cadeda.mcp.model.AndroidMcpConstants.Tools
 
 /**

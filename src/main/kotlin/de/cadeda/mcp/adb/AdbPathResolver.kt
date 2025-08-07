@@ -25,7 +25,7 @@ class AdbPathResolver {
 
         // Try default ADB command first
         tryDefaultAdbCommand()?.let { return it }
-        
+
         // Try fallback paths
         tryFallbackPaths()?.let { return it }
 
@@ -39,7 +39,7 @@ class AdbPathResolver {
                 cachedAdbPath = AdbPaths.DEFAULT_COMMAND
                 AdbPaths.DEFAULT_COMMAND
             } else null
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         }
     }
@@ -61,7 +61,7 @@ class AdbPathResolver {
                 cachedAdbPath = path
                 path
             } else null
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         }
     }
@@ -79,7 +79,7 @@ class AdbPathResolver {
             if (exitCode == 0) {
                 Result.success(CommandResult(stdout, stderr))
             } else {
-                Result.failure(de.cadeda.mcp.model.uihierarchy.LayoutInspectorError.AdbNotFound("ADB command failed with exit code $exitCode: $stderr"))
+                Result.failure(LayoutInspectorError.AdbNotFound("ADB command failed with exit code $exitCode: $stderr"))
             }
         } catch (e: Exception) {
             Result.failure(e)
