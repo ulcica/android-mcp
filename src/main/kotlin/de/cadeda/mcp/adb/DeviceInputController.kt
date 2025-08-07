@@ -169,19 +169,34 @@ class DefaultDeviceInputController(
      */
     private suspend fun discoverMainActivity(packageName: String, deviceId: String): String? {
         return try {
+            // Use pm resolve-activity to get the default MAIN/LAUNCHER activity for this package
             val result = shellCommandExecutor.executeShellCommand(
                 deviceId, 
-                "pm dump $packageName | grep -A 1 'android.intent.action.MAIN:' | tail -n 1"
+                "pm resolve-activity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER $packageName"
             )
             
             // Parse the output to extract the activity class
-            // Expected format: "        9802556 me.ulcica.home/.MainActivity filter d7449d7"
-            val activityMatch = Regex("""$packageName/([.\w]+)\s""").find(result.stdout)
-            if (activityMatch != null) {
-                val className = activityMatch.groupValues[1]
-                // Return the className (e.g., ".MainActivity")
-                return className
+            // Look for either targetActivity (for aliases) or name (for direct activities)
+            val targetActivityMatch = Regex("""targetActivity=(\S+)""").find(result.stdout)
+            val activityName = if (targetActivityMatch != null && targetActivityMatch.groupValues[1] != "null") {
+                targetActivityMatch.groupValues[1]
+            } else {
+                // Fall back to name field
+                val nameMatch = Regex("""name=(\S+)""").find(result.stdout)
+                nameMatch?.groupValues?.get(1)
             }
+            
+            // Extract the class part from full activity name
+            activityName?.let { fullName ->
+                // If activity name starts with package, remove the package prefix
+                if (fullName.startsWith(packageName)) {
+                    return fullName.substring(packageName.length)
+                } else {
+                    // For cross-package activities (like Google Maps), return the full name
+                    return fullName
+                }
+            }
+            
             null
         } catch (_: Exception) {
             null // Fallback to null if discovery fails
