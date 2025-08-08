@@ -224,15 +224,10 @@ class DefaultDeviceInputController(
             )
 
             // Parse the output to extract the activity class
-            // Look for either targetActivity (for aliases) or name (for direct activities)
-            val targetActivityMatch = Regex("""targetActivity=(\S+)""").find(result.stdout)
-            val activityName = if (targetActivityMatch != null && targetActivityMatch.groupValues[1] != "null") {
-                targetActivityMatch.groupValues[1]
-            } else {
-                // Fall back to name field
-                val nameMatch = Regex("""name=(\S+)""").find(result.stdout)
-                nameMatch?.groupValues?.get(1)
-            }
+            // Use the 'name' field as this is the actual exported launcher activity
+            // The 'targetActivity' is what it routes to internally but might not be exported
+            val nameMatch = Regex("""name=(\S+)""").find(result.stdout)
+            val activityName = nameMatch?.groupValues?.get(1)
 
             // Extract the class part from full activity name
             activityName?.let { fullName ->
